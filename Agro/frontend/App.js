@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import CropDiagnosis from './screens/CropDiagnosis';
+import CropDiagnosis from './Screens/CropDiagnosis';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,7 +39,7 @@ function HomeScreen({ navigation }) {
 
       <View style={styles.cards}>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={()=>navigation.navigate('CropDiagnosis')}>
           <Text style={styles.icon}>🌿</Text>
           <View>
             <Text style={styles.cardTitle}>Crop Diagnosis</Text>
