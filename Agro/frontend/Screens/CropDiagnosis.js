@@ -37,8 +37,8 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    fontSize: 17,
-    lineHeight: 24,
+    fontSize: 19,
+    lineHeight: 26,
     marginBottom: 30,
   },
 
@@ -59,8 +59,3 @@ const styles = StyleSheet.create({
     lineHeight: 30,
   },
 });
-
-subtitle: {
-  size: 19,
-  lineHeight: 26,
-}
