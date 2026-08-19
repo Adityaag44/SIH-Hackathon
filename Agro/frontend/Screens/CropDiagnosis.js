@@ -59,3 +59,8 @@ const styles = StyleSheet.create({
     lineHeight: 30,
   },
 });
+
+subtitle: {
+  size: 19,
+  lineHeight: 26,
+}
