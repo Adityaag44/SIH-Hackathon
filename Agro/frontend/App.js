@@ -3,7 +3,8 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CropDiagnosis from './Screens/CropDiagnosis';
-
+import MandiPrices from './Screens/MandiPrices';
+import FarmerServices from './Screens/FarmerServices';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -21,6 +22,18 @@ export default function App() {
           component={CropDiagnosis}
           options={{ title: 'Crop Diagnosis' }}
         />
+          <Stack.Screen
+          name="MandiPrices"
+          component={MandiPrices}
+          options={{ title: 'Mandi Prices' }}
+        />
+        <Stack.Screen
+          name="FarmerServices"
+          component={FarmerServices}
+          options={{ title: 'Farmer Services' }}
+        />
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -59,15 +72,20 @@ function HomeScreen({ navigation }) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
-          <Text style={styles.icon}>💰</Text>
-          <View>
-            <Text style={styles.cardTitle}>Mandi Prices</Text>
-            <Text style={styles.cardText}>
-              Find current market prices
-            </Text>
-          </View>
-        </TouchableOpacity>
+       <TouchableOpacity
+         style={styles.card}
+         onPress={() => navigation.navigate('MandiPrices')}
+> 
+         <Text style={styles.icon}>💰</Text>
+
+        <View>
+           <Text style={styles.cardTitle}>Mandi Prices</Text>
+
+          <Text style={styles.cardText}>
+             Find current market prices
+             </Text>
+           </View>
+          </TouchableOpacity>
 
         <TouchableOpacity style={styles.card}>
           <Text style={styles.icon}>💧</Text>
@@ -79,8 +97,22 @@ function HomeScreen({ navigation }) {
           </View>
         </TouchableOpacity>
 
-      </View>
-    </View>
+      <TouchableOpacity
+         style={styles.card}
+         onPress={() => navigation.navigate('FarmerServices')}
+>
+          <Text style={styles.icon}>🧑‍🌾</Text>
+
+           <View>
+             <Text style={styles.cardTitle}>Farmer Services</Text>
+
+            <Text style={styles.cardText}>
+             Access important government services
+             </Text>
+           </View>
+          </TouchableOpacity>
+          </View>
+         </View>
   );
 }
 
