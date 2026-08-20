@@ -72,7 +72,7 @@ export default function FarmerServices() {
         <TouchableOpacity
           style={styles.card}
           onPress={() =>
-            openWebsite('https://www.mpfr.agristack.gov.in/')
+            openWebsite('https://fasalrin.gov.in/')
           }
         >
           <Text style={styles.icon}>💳</Text>
