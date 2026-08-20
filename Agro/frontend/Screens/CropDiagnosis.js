@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useState} from 'react';
 import {
     View,
     Text,
@@ -8,7 +8,14 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 
 export default function CropDiagnosis({ navigation }) {
+  const [image,setImage]= useState(null);
   const pickImage = async () => {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (!permission.granted) {
+    alert('Permission to access photos is required.');
+    return;
+  }
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsEditing: true,
@@ -17,7 +24,7 @@ export default function CropDiagnosis({ navigation }) {
         });
 
         if (!result.canceled) {
-            console.log(result.assets[0].uri);
+        setImage(result.assets[0].uri);
         }
     };
 
@@ -57,8 +64,8 @@ export default function CropDiagnosis({ navigation }) {
 
                 <TouchableOpacity
                     style={styles.secondaryButton}
-                    onPress={() => { pickImage
-                    }}
+                    onPress={pickImage
+                    }
                 >
                     <Text style={styles.secondaryButtonText}>
                         🖼️ Choose from Gallery
