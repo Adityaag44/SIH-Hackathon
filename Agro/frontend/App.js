@@ -9,12 +9,21 @@ import Login from './Screens/Login';
 import Register from './Screens/Register';
 import UserDetails from './Screens/UserDetails';
 import Profile from './Screens/Profile';
+import WeatherSoil from './Screens/WeatherSoil';
+import FarmerAdvisory from './Screens/FarmerAdvisory';
 import { LanguageProvider, useLanguage } from './Screens/LanguageContext';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <LanguageProvider>
+     <AppNavigator />
+    </LanguageProvider>
+  );
+}
+
+function AppNavigator() {
+  return (
      <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
@@ -58,11 +67,20 @@ export default function App() {
           component={FarmerServices}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="Weather"
+          component={WeatherSoil}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FarmerAdvisory"
+          component={FarmerAdvisory}
+          options={{ headerShown: false }}
+        />
 
 
       </Stack.Navigator>
     </NavigationContainer>
-    </LanguageProvider>
   );
 }
 
@@ -100,7 +118,10 @@ function HomeScreen({ navigation, route }) {
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('Weather', { profile })}
+        >
           <Text style={styles.icon}>🌦️</Text>
           <View>
             <Text style={styles.cardTitle}>{t('weatherSoil')}</Text>
@@ -125,7 +146,10 @@ function HomeScreen({ navigation, route }) {
            </View>
           </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card}>
+        <TouchableOpacity
+          style={styles.card}
+          onPress={() => navigation.navigate('FarmerAdvisory', { profile })}
+        >
           <Text style={styles.icon}>💧</Text>
           <View>
             <Text style={styles.cardTitle}>{t('farmAdvisory')}</Text>

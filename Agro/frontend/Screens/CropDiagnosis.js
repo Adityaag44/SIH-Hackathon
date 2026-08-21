@@ -13,6 +13,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useLanguage } from './LanguageContext';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
+
 export default function CropDiagnosis({ navigation }) {
   const { t } = useLanguage();
   const [image, setImage] = useState(null);
@@ -105,8 +107,11 @@ export default function CropDiagnosis({ navigation }) {
     setDiagnosis(null);
 
     try {
+      if (!API_BASE_URL) {
+        throw new Error('EXPO_PUBLIC_API_URL is not configured.');
+      }
       const response = await fetch(
-        'http://10.163.114.200:8000/diagnose',
+        `${API_BASE_URL}/diagnose`,
         {
           method: 'POST',
           body: formData,

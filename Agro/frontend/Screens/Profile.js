@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
-import { useLanguage } from './LanguageContext';
+import { languages, useLanguage } from './LanguageContext';
 
-export default function Profile({ route }) {
-  const { t } = useLanguage();
+export default function Profile({ navigation, route }) {
+  const { language, setLanguage, t } = useLanguage();
   const profile = route.params?.profile || {};
   const [profileImage, setProfileImage] = useState(null);
   const displayName = profile.name || 'Farmer';
@@ -71,6 +71,27 @@ export default function Profile({ route }) {
             </View>
           ))}
         </View>
+
+        <Text style={styles.sectionTitle}>Language preference</Text>
+        <View style={styles.languageCard}>
+          {languages.map((item) => (
+            <TouchableOpacity
+              key={item.code}
+              onPress={() => setLanguage(item.code)}
+              style={[styles.languageChip, language === item.code && styles.languageChipSelected]}
+            >
+              <Text style={[styles.languageText, language === item.code && styles.languageTextSelected]}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })}
+        >
+          <Text style={styles.logoutText}>Log out</Text>
+        </TouchableOpacity>
+        <Text style={styles.footer}>created by Vital6</Text>
       </ScrollView>
     </View>
   );
@@ -97,4 +118,12 @@ const styles = StyleSheet.create({
   detailBorder: { borderBottomColor: '#E6ECE3', borderBottomWidth: 1 },
   detailLabel: { color: '#788477', fontSize: 13, marginBottom: 4 },
   detailValue: { color: '#263C2B', fontSize: 16, fontWeight: '600' },
+  languageCard: { backgroundColor: '#FFFFFF', borderRadius: 16, elevation: 2, flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 14 },
+  languageChip: { backgroundColor: '#EEF4EB', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 9 },
+  languageChipSelected: { backgroundColor: '#2F6B3B' },
+  languageText: { color: '#36533B', fontSize: 13, fontWeight: '600' },
+  languageTextSelected: { color: '#FFFFFF' },
+  logoutButton: { alignItems: 'center', borderColor: '#B42318', borderRadius: 12, borderWidth: 1, marginTop: 26, paddingVertical: 14 },
+  logoutText: { color: '#B42318', fontSize: 16, fontWeight: '700' },
+  footer: { color: '#6B7B3B', fontSize: 13, fontWeight: '600', marginTop: 22, textAlign: 'center' },
 });

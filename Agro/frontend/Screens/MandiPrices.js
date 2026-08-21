@@ -1,362 +1,41 @@
-import React, { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from './LanguageContext';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
+const COPY = {
+  en: { daily: 'Daily prices', variety: 'Variety-wise', local: 'My local prices', latest: 'Latest market records from across India', market: 'Market', place: 'District / State', varietyLabel: 'Variety', date: 'Arrival date', modal: 'Modal', range: 'Min – Max', form: 'Add your local market price', commodity: 'Commodity *', marketField: 'Market / village *', varietyField: 'Variety (optional)', price: 'Price per quintal (₹) *', save: 'Save local price', noData: 'No current records available.', note: 'Wholesale rates in ₹ per quintal. Confirm with the market before trading.' },
+  hi: { daily: 'दैनिक भाव', variety: 'किस्म के अनुसार', local: 'मेरे स्थानीय भाव', latest: 'भारत भर के नवीनतम मंडी रिकॉर्ड', market: 'मंडी', place: 'जिला / राज्य', varietyLabel: 'किस्म', date: 'आगमन तिथि', modal: 'मॉडल भाव', range: 'न्यूनतम – अधिकतम', form: 'स्थानीय बाजार भाव जोड़ें', commodity: 'फसल *', marketField: 'मंडी / गांव *', varietyField: 'किस्म (वैकल्पिक)', price: 'भाव प्रति क्विंटल (₹) *', save: 'स्थानीय भाव सहेजें', noData: 'कोई वर्तमान रिकॉर्ड उपलब्ध नहीं है।', note: 'थोक भाव ₹ प्रति क्विंटल में हैं। व्यापार से पहले मंडी से पुष्टि करें।' },
+  mr: { daily: 'दैनंदिन भाव', variety: 'वाणानुसार', local: 'माझे स्थानिक भाव', latest: 'भारतातील नवीनतम बाजार नोंदी', market: 'बाजार', place: 'जिल्हा / राज्य', varietyLabel: 'वाण', date: 'आवक तारीख', modal: 'मॉडल भाव', range: 'किमान – कमाल', form: 'स्थानिक बाजार भाव जोडा', commodity: 'पीक *', marketField: 'बाजार / गाव *', varietyField: 'वाण (ऐच्छिक)', price: 'भाव प्रति क्विंटल (₹) *', save: 'स्थानिक भाव जतन करा', noData: 'सध्याची नोंद उपलब्ध नाही.', note: 'घाऊक भाव ₹ प्रति क्विंटल आहेत. व्यवहारापूर्वी बाजाराशी खात्री करा.' },
+};
+const WORDS = { hi: { Onion: 'प्याज', Tomato: 'टमाटर', Potato: 'आलू', Wheat: 'गेहूं', Rice: 'चावल', Apple: 'सेब', Gujarat: 'गुजरात', Maharashtra: 'महाराष्ट्र', Karnataka: 'कर्नाटक', Odisha: 'ओडिशा', Bihar: 'बिहार', Kerala: 'केरल' }, mr: { Onion: 'कांदा', Tomato: 'टोमॅटो', Potato: 'बटाटा', Wheat: 'गहू', Rice: 'तांदूळ', Apple: 'सफरचंद', Gujarat: 'गुजरात', Maharashtra: 'महाराष्ट्र', Karnataka: 'कर्नाटक', Odisha: 'ओडिशा', Bihar: 'बिहार', Kerala: 'केरळ' } };
+const translate = (value, language) => WORDS[language]?.[value] || value || '—';
+
 export default function MandiPrices() {
-  const { t } = useLanguage();
-  const [search, setSearch] = useState('');
-
-  const mandiData = [
-    {
-      crop: 'Wheat',
-      icon: '🌾',
-      price: '₹2,400',
-      min: '₹2,200',
-      max: '₹2,550',
-      mandi: 'Pune Mandi',
-    },
-    {
-      crop: 'Rice',
-      icon: '🍚',
-      price: '₹3,100',
-      min: '₹2,800',
-      max: '₹3,400',
-      mandi: 'Pune Mandi',
-    },
-    {
-      crop: 'Maize',
-      icon: '🌽',
-      price: '₹2,100',
-      min: '₹1,900',
-      max: '₹2,300',
-      mandi: 'Pune Mandi',
-    },
-    {
-      crop: 'Onion',
-      icon: '🧅',
-      price: '₹1,800',
-      min: '₹1,500',
-      max: '₹2,100',
-      mandi: 'Pune Mandi',
-    },
-    {
-      crop: 'Tomato',
-      icon: '🍅',
-      price: '₹2,200',
-      min: '₹1,800',
-      max: '₹2,500',
-      mandi: 'Pune Mandi',
-    },
-  ];
-
-  const filteredData = mandiData.filter((item) =>
-    item.crop.toLowerCase().includes(search.toLowerCase())
-  );
-
-  return (
-    <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>💰 {t('mandiPrices')}</Text>
-          <Text style={styles.subtitle}>
-            {t('mandiSubtitle')}
-          </Text>
-        </View>
-
-        {/* Search */}
-        <View style={styles.searchBox}>
-          <Text style={styles.searchIcon}>🔍</Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder={t('searchCrop')}
-            placeholderTextColor="#888"
-            value={search}
-            onChangeText={setSearch}
-          />
-        </View>
-
-        {/* Location */}
-        <View style={styles.locationBox}>
-          <Text style={styles.locationLabel}>📍 {t('mandiLocation')}</Text>
-          <Text style={styles.locationName}>Pune Mandi</Text>
-          <Text style={styles.updated}>{t('pricesUpdated')}</Text>
-        </View>
-
-        {/* Section title */}
-        <Text style={styles.sectionTitle}>{t('todaysPrices')}</Text>
-
-        {/* Price Cards */}
-        {filteredData.length > 0 ? (
-          filteredData.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.priceCard}
-              activeOpacity={0.8}
-            >
-              <View style={styles.cropIcon}>
-                <Text style={styles.icon}>{item.icon}</Text>
-              </View>
-
-              <View style={styles.cropInfo}>
-                <Text style={styles.cropName}>
-                  {item.crop}
-                </Text>
-
-                <Text style={styles.hindiName}>
-                  {item.hindi}
-                </Text>
-
-                <Text style={styles.mandiName}>
-                  {item.mandi}
-                </Text>
-
-                <View style={styles.rangeRow}>
-                  <Text style={styles.rangeText}>
-                    {t('min')} {item.min}
-                  </Text>
-
-                  <Text style={styles.rangeText}>
-                    {t('max')} {item.max}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.priceBox}>
-                <Text style={styles.price}>
-                  {item.price}
-                </Text>
-
-                <Text style={styles.perQuintal}>
-                  {t('perQuintal')}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))
-        ) : (
-          <View style={styles.noResult}>
-            <Text style={styles.noResultIcon}>🔎</Text>
-            <Text style={styles.noResultText}>
-              {t('noCrop')}
-            </Text>
-            <Text style={styles.noResultSubtext}>
-              Try searching another crop
-            </Text>
-          </View>
-        )}
-
-        {/* Note */}
-        <View style={styles.noteBox}>
-          <Text style={styles.noteTitle}>ℹ️ {t('priceInformation')}</Text>
-
-          <Text style={styles.noteText}>
-            Prices shown are sample market prices.
-            Connect a mandi price API to display
-            live market rates.
-          </Text>
-        </View>
-
-      </ScrollView>
-    </View>
-  );
+  const { t, language } = useLanguage(); const c = { ...(COPY[language] || COPY.en), daily: t('dailyPrices'), variety: t('varietyWise'), local: t('localPrices'), latest: t('latestRecords'), market: t('market'), place: t('districtState'), varietyLabel: t('variety'), date: t('arrivalDate'), modal: t('modalPrice'), range: t('priceRange'), form: t('addLocalPrice'), save: t('saveLocalPrice') };
+  const [tab, setTab] = useState('daily'); const [records, setRecords] = useState([]); const [loading, setLoading] = useState(false); const [error, setError] = useState('');
+  const [form, setForm] = useState({ commodity: '', variety: '', market: '', price: '' });
+  const load = async (currentTab = tab) => {
+    if (!API_BASE_URL) { setError('Server address is not configured.'); return; }
+    setLoading(true); setError('');
+    try { const response = await fetch(`${API_BASE_URL}/${currentTab === 'local' ? 'local-prices' : 'mandi-prices?limit=30'}`); const body = await response.json(); if (!response.ok) throw new Error(body.detail || 'Could not load market prices.'); setRecords(body.records || []); }
+    catch (err) { setRecords([]); setError(err.message || 'Could not load market prices.'); } finally { setLoading(false); }
+  };
+  useEffect(() => { load(tab); }, [tab]);
+  const save = async () => {
+    const price = Number(form.price); if (!form.commodity.trim() || !form.market.trim() || !price) { Alert.alert('Missing details', 'Enter commodity, market, and a valid price.'); return; }
+    try { const response = await fetch(`${API_BASE_URL}/local-prices`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, price }) }); const body = await response.json(); if (!response.ok) throw new Error(body.detail); setForm({ commodity: '', variety: '', market: '', price: '' }); setRecords((items) => [body, ...items]); }
+    catch (err) { Alert.alert('Could not save', err.message); }
+  };
+  return <View style={styles.container}><ScrollView contentContainerStyle={styles.content}>
+    <Text style={styles.title}>💰 {t('mandiPrices')}</Text><Text style={styles.subtitle}>{c.latest}</Text>
+    <View style={styles.tabs}>{[['daily', c.daily], ['variety', c.variety], ['local', c.local]].map(([id, label]) => <TouchableOpacity key={id} style={[styles.tab, tab === id && styles.active]} onPress={() => setTab(id)}><Text style={[styles.tabText, tab === id && styles.activeText]}>{label}</Text></TouchableOpacity>)}</View>
+    {tab === 'local' && <View style={styles.form}><Text style={styles.formTitle}>{c.form}</Text><Field placeholder={c.commodity} value={form.commodity} onChangeText={(commodity) => setForm({ ...form, commodity })} /><Field placeholder={c.varietyField} value={form.variety} onChangeText={(variety) => setForm({ ...form, variety })} /><Field placeholder={c.marketField} value={form.market} onChangeText={(market) => setForm({ ...form, market })} /><Field placeholder={c.price} value={form.price} onChangeText={(price) => setForm({ ...form, price })} keyboardType="decimal-pad" /><TouchableOpacity style={styles.save} onPress={save}><Text style={styles.saveText}>{c.save}</Text></TouchableOpacity></View>}
+    {loading && <ActivityIndicator color="#2E7D32" size="large" style={styles.loading} />}{!!error && <Text style={styles.error}>{error}</Text>}
+    {!loading && !error && records.map((item, index) => <Card key={`${item.market}-${item.commodity}-${index}`} item={item} c={c} language={language} local={tab === 'local'} />)}
+    {!loading && !error && !records.length && <Text style={styles.empty}>{c.noData}</Text>}<Text style={styles.note}>{c.note}</Text>
+  </ScrollView></View>;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F5F8F2',
-    paddingHorizontal: 20,
-  },
-
-  header: {
-    paddingTop: 25,
-    paddingBottom: 20,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-
-  subtitle: {
-    fontSize: 15,
-    color: '#666',
-    marginTop: 6,
-  },
-
-  searchBox: {
-    height: 52,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    marginBottom: 16,
-    elevation: 2,
-  },
-
-  searchIcon: {
-    fontSize: 20,
-    marginRight: 10,
-  },
-
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#222',
-  },
-
-  locationBox: {
-    backgroundColor: '#EAF4E3',
-    borderRadius: 15,
-    padding: 16,
-    marginBottom: 22,
-  },
-
-  locationLabel: {
-    fontSize: 14,
-    color: '#555',
-  },
-
-  locationName: {
-    fontSize: 19,
-    fontWeight: 'bold',
-    marginTop: 5,
-  },
-
-  updated: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 3,
-  },
-
-  sectionTitle: {
-    fontSize: 21,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-
-  priceCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 17,
-    padding: 15,
-    marginBottom: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    elevation: 3,
-  },
-
-  cropIcon: {
-    width: 55,
-    height: 55,
-    borderRadius: 15,
-    backgroundColor: '#F1F7EC',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-
-  icon: {
-    fontSize: 30,
-  },
-
-  cropInfo: {
-    flex: 1,
-  },
-
-  cropName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-  hindiName: {
-    fontSize: 13,
-    color: '#777',
-    marginTop: 1,
-  },
-
-  mandiName: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: 4,
-  },
-
-  rangeRow: {
-    flexDirection: 'row',
-    marginTop: 7,
-    gap: 12,
-  },
-
-  rangeText: {
-    fontSize: 11,
-    color: '#666',
-  },
-
-  priceBox: {
-    alignItems: 'flex-end',
-    marginLeft: 8,
-  },
-
-  price: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-  perQuintal: {
-    fontSize: 11,
-    color: '#777',
-    marginTop: 2,
-  },
-
-  noResult: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 35,
-    alignItems: 'center',
-  },
-
-  noResultIcon: {
-    fontSize: 35,
-  },
-
-  noResultText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
-
-  noResultSubtext: {
-    fontSize: 13,
-    color: '#777',
-    marginTop: 5,
-  },
-
-  noteBox: {
-    backgroundColor: '#FFF8E8',
-    borderRadius: 15,
-    padding: 16,
-    marginTop: 8,
-    marginBottom: 30,
-  },
-
-  noteTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-  },
-
-  noteText: {
-    fontSize: 12,
-    color: '#666',
-    lineHeight: 18,
-    marginTop: 6,
-  },
-});
+function Field(props) { return <TextInput {...props} placeholderTextColor="#687" style={styles.field} />; }
+function Card({ item, c, language, local }) { const place = [item.district, item.state].filter((x) => x && x !== '—').map((x) => translate(x, language)).join(', '); return <View style={styles.card}><View style={styles.info}><Text style={styles.commodity}>{translate(item.commodity, language)}</Text><Text style={styles.meta}>{c.market}: {item.market}</Text><Text style={styles.meta}>{c.place}: {place || '—'}</Text>{item.variety ? <Text style={styles.meta}>{c.varietyLabel}: {translate(item.variety, language)}</Text> : null}{item.arrival_date && item.arrival_date !== '—' ? <Text style={styles.meta}>{c.date}: {item.arrival_date}</Text> : null}</View><View style={styles.values}>{local ? <Text style={styles.price}>₹{item.price}</Text> : <><Text style={styles.price}>₹{item.modal_price}</Text><Text style={styles.range}>{c.modal}</Text><Text style={styles.range}>{c.range}: ₹{item.min_price}–₹{item.max_price}</Text></>}<Text style={styles.unit}>/ quintal</Text></View></View>; }
+const styles = StyleSheet.create({ container: { flex: 1, backgroundColor: '#F5F8F2' }, content: { padding: 20, paddingTop: 48, paddingBottom: 30 }, title: { color: '#1B4332', fontSize: 28, fontWeight: 'bold' }, subtitle: { color: '#667085', marginTop: 5, marginBottom: 18 }, tabs: { backgroundColor: '#E3EDE0', borderRadius: 12, flexDirection: 'row', padding: 4, marginBottom: 16 }, tab: { alignItems: 'center', borderRadius: 9, flex: 1, paddingVertical: 10 }, active: { backgroundColor: '#2E7D32' }, tabText: { color: '#496057', fontSize: 12, fontWeight: '600' }, activeText: { color: '#FFF' }, card: { alignItems: 'center', backgroundColor: '#FFF', borderRadius: 15, elevation: 2, flexDirection: 'row', marginBottom: 11, padding: 14 }, info: { flex: 1 }, commodity: { color: '#1B4332', fontSize: 17, fontWeight: 'bold', marginBottom: 4 }, meta: { color: '#5E6B65', fontSize: 12, lineHeight: 18 }, values: { alignItems: 'flex-end', marginLeft: 8 }, price: { color: '#1B4332', fontSize: 19, fontWeight: 'bold' }, range: { color: '#667085', fontSize: 10, marginTop: 3, textAlign: 'right' }, unit: { color: '#667085', fontSize: 10, marginTop: 3 }, form: { backgroundColor: '#FFF', borderRadius: 16, padding: 16, marginBottom: 12 }, formTitle: { color: '#1B4332', fontSize: 17, fontWeight: 'bold', marginBottom: 10 }, field: { backgroundColor: '#F8FBF7', borderColor: '#D7E5D2', borderRadius: 10, borderWidth: 1, height: 46, marginBottom: 10, paddingHorizontal: 12 }, save: { alignItems: 'center', backgroundColor: '#2E7D32', borderRadius: 10, padding: 14 }, saveText: { color: '#FFF', fontWeight: 'bold' }, loading: { marginVertical: 30 }, error: { color: '#B42318', marginVertical: 15 }, empty: { color: '#667085', marginVertical: 25, textAlign: 'center' }, note: { color: '#667085', fontSize: 12, lineHeight: 18, marginTop: 14 } });
