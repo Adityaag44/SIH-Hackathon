@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useLanguage } from './LanguageContext';
+import { apiFetch } from '../config/api';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
 const COPY = {
   en: { daily: 'Daily prices', variety: 'Variety-wise', local: 'My local prices', latest: 'Latest market records from across India', market: 'Market', place: 'District / State', varietyLabel: 'Variety', date: 'Arrival date', modal: 'Modal', range: 'Min – Max', form: 'Add your local market price', commodity: 'Commodity *', marketField: 'Market / village *', varietyField: 'Variety (optional)', price: 'Price per quintal (₹) *', save: 'Save local price', noData: 'No current records available.', note: 'Wholesale rates in ₹ per quintal. Confirm with the market before trading.' },
   hi: { daily: 'दैनिक भाव', variety: 'किस्म के अनुसार', local: 'मेरे स्थानीय भाव', latest: 'भारत भर के नवीनतम मंडी रिकॉर्ड', market: 'मंडी', place: 'जिला / राज्य', varietyLabel: 'किस्म', date: 'आगमन तिथि', modal: 'मॉडल भाव', range: 'न्यूनतम – अधिकतम', form: 'स्थानीय बाजार भाव जोड़ें', commodity: 'फसल *', marketField: 'मंडी / गांव *', varietyField: 'किस्म (वैकल्पिक)', price: 'भाव प्रति क्विंटल (₹) *', save: 'स्थानीय भाव सहेजें', noData: 'कोई वर्तमान रिकॉर्ड उपलब्ध नहीं है।', note: 'थोक भाव ₹ प्रति क्विंटल में हैं। व्यापार से पहले मंडी से पुष्टि करें।' },
@@ -16,15 +16,14 @@ export default function MandiPrices() {
   const [tab, setTab] = useState('daily'); const [records, setRecords] = useState([]); const [loading, setLoading] = useState(false); const [error, setError] = useState('');
   const [form, setForm] = useState({ commodity: '', variety: '', market: '', price: '' });
   const load = async (currentTab = tab) => {
-    if (!API_BASE_URL) { setError('Server address is not configured.'); return; }
     setLoading(true); setError('');
-    try { const response = await fetch(`${API_BASE_URL}/${currentTab === 'local' ? 'local-prices' : 'mandi-prices?limit=30'}`); const body = await response.json(); if (!response.ok) throw new Error(body.detail || 'Could not load market prices.'); setRecords(body.records || []); }
+    try { const body = await apiFetch(`/${currentTab === 'local' ? 'local-prices' : 'mandi-prices?limit=60'}`); setRecords(body.records || []); }
     catch (err) { setRecords([]); setError(err.message || 'Could not load market prices.'); } finally { setLoading(false); }
   };
   useEffect(() => { load(tab); }, [tab]);
   const save = async () => {
     const price = Number(form.price); if (!form.commodity.trim() || !form.market.trim() || !price) { Alert.alert('Missing details', 'Enter commodity, market, and a valid price.'); return; }
-    try { const response = await fetch(`${API_BASE_URL}/local-prices`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, price }) }); const body = await response.json(); if (!response.ok) throw new Error(body.detail); setForm({ commodity: '', variety: '', market: '', price: '' }); setRecords((items) => [body, ...items]); }
+    try { const body = await apiFetch('/local-prices', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, price }) }); setForm({ commodity: '', variety: '', market: '', price: '' }); setRecords((items) => [body, ...items]); }
     catch (err) { Alert.alert('Could not save', err.message); }
   };
   return <View style={styles.container}><ScrollView contentContainerStyle={styles.content}>

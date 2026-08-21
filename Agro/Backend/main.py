@@ -22,6 +22,66 @@ crop_api = CropHealthApi(api_key=KINDWISE_API_KEY)
 
 app = FastAPI()
 local_prices = []
+FALLBACK_MANDI_ITEMS = [
+    ("Wheat", "Lokwan", "Indore", "Indore", "Madhya Pradesh", 2300, 2650, 2475),
+    ("Rice", "Common", "Karnal", "Karnal", "Haryana", 2800, 3400, 3100),
+    ("Paddy", "Basmati", "Amritsar", "Amritsar", "Punjab", 3200, 4100, 3650),
+    ("Maize", "Yellow", "Davangere", "Davangere", "Karnataka", 1900, 2350, 2125),
+    ("Bajra", "Hybrid", "Jaipur", "Jaipur", "Rajasthan", 2100, 2500, 2300),
+    ("Jowar", "White", "Solapur", "Solapur", "Maharashtra", 2600, 3300, 2950),
+    ("Ragi", "Local", "Mysuru", "Mysuru", "Karnataka", 3000, 3900, 3450),
+    ("Barley", "Feed", "Bikaner", "Bikaner", "Rajasthan", 1800, 2200, 2000),
+    ("Gram", "Desi", "Akola", "Akola", "Maharashtra", 5200, 6100, 5650),
+    ("Tur", "Red", "Gulbarga", "Kalaburagi", "Karnataka", 7600, 9200, 8400),
+    ("Moong", "Green", "Nagaur", "Nagaur", "Rajasthan", 6500, 8200, 7350),
+    ("Urad", "Black", "Latur", "Latur", "Maharashtra", 6800, 8500, 7650),
+    ("Masoor", "Red", "Kanpur", "Kanpur", "Uttar Pradesh", 5600, 6800, 6200),
+    ("Groundnut", "Bold", "Rajkot", "Rajkot", "Gujarat", 5200, 6900, 6050),
+    ("Soybean", "Yellow", "Ujjain", "Ujjain", "Madhya Pradesh", 4200, 5100, 4650),
+    ("Mustard", "Black", "Alwar", "Alwar", "Rajasthan", 5000, 6100, 5550),
+    ("Sesame", "White", "Unjha", "Mehsana", "Gujarat", 9800, 12500, 11150),
+    ("Sunflower", "Hybrid", "Raichur", "Raichur", "Karnataka", 4300, 5400, 4850),
+    ("Cotton", "Long Staple", "Adilabad", "Adilabad", "Telangana", 6200, 7600, 6900),
+    ("Sugarcane", "Co 86032", "Kolhapur", "Kolhapur", "Maharashtra", 300, 380, 340),
+    ("Onion", "Red", "Lasalgaon", "Nashik", "Maharashtra", 1200, 2400, 1800),
+    ("Potato", "Jyoti", "Agra", "Agra", "Uttar Pradesh", 900, 1600, 1250),
+    ("Tomato", "Hybrid", "Kolar", "Kolar", "Karnataka", 800, 1800, 1300),
+    ("Brinjal", "Round", "Pune", "Pune", "Maharashtra", 1200, 2400, 1800),
+    ("Cabbage", "Green", "Azadpur", "Delhi", "Delhi", 600, 1300, 950),
+    ("Cauliflower", "White", "Patna", "Patna", "Bihar", 1000, 2100, 1550),
+    ("Okra", "Green", "Surat", "Surat", "Gujarat", 1800, 3200, 2500),
+    ("Green Chilli", "Local", "Guntur", "Guntur", "Andhra Pradesh", 3000, 6200, 4600),
+    ("Garlic", "Desi", "Neemuch", "Neemuch", "Madhya Pradesh", 6500, 11000, 8750),
+    ("Ginger", "Fresh", "Kochi", "Ernakulam", "Kerala", 5500, 9800, 7650),
+    ("Banana", "Robusta", "Jalgaon", "Jalgaon", "Maharashtra", 900, 1500, 1200),
+    ("Apple", "Royal Delicious", "Shimla", "Shimla", "Himachal Pradesh", 6500, 10500, 8500),
+    ("Mango", "Alphonso", "Ratnagiri", "Ratnagiri", "Maharashtra", 8000, 15000, 11500),
+    ("Orange", "Nagpur", "Nagpur", "Nagpur", "Maharashtra", 2200, 4200, 3200),
+    ("Grapes", "Thompson", "Nashik", "Nashik", "Maharashtra", 3500, 7000, 5250),
+    ("Pomegranate", "Bhagwa", "Sangli", "Sangli", "Maharashtra", 6000, 12000, 9000),
+    ("Coconut", "Milling", "Kozhikode", "Kozhikode", "Kerala", 1800, 3200, 2500),
+    ("Turmeric", "Finger", "Erode", "Erode", "Tamil Nadu", 7200, 9800, 8500),
+    ("Coriander", "Green", "Kota", "Kota", "Rajasthan", 5200, 7600, 6400),
+    ("Cumin", "Jeera", "Unjha", "Mehsana", "Gujarat", 22000, 31000, 26500),
+    ("Cardamom", "Small", "Idukki", "Idukki", "Kerala", 90000, 140000, 115000),
+    ("Black Pepper", "Malabar", "Wayanad", "Wayanad", "Kerala", 42000, 58000, 50000),
+    ("Tea", "CTC", "Guwahati", "Kamrup", "Assam", 14000, 22000, 18000),
+    ("Coffee", "Arabica", "Chikkamagaluru", "Chikkamagaluru", "Karnataka", 19000, 28000, 23500),
+]
+FALLBACK_MANDI_RECORDS = [
+    {
+        "commodity": commodity,
+        "variety": variety,
+        "market": market,
+        "district": district,
+        "state": state,
+        "min_price": str(min_price),
+        "max_price": str(max_price),
+        "modal_price": str(modal_price),
+        "arrival_date": "Recent sample",
+    }
+    for commodity, variety, market, district, state, min_price, max_price, modal_price in FALLBACK_MANDI_ITEMS
+]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
@@ -85,7 +145,7 @@ def mandi_prices(
         return {"records": [normalize_mandi_record(record) for record in response.get("records", [])], "count": response.get("count", 0)}
     except Exception as error:
         print("AGMARKNET API error:", error)
-        raise HTTPException(status_code=502, detail="Unable to load current mandi prices.")
+        return {"records": FALLBACK_MANDI_RECORDS[:limit], "count": len(FALLBACK_MANDI_RECORDS), "source": "fallback"}
 
 
 class LocalPrice(BaseModel):

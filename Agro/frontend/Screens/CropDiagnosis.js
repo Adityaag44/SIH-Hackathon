@@ -12,8 +12,7 @@ import {
 
 import * as ImagePicker from 'expo-image-picker';
 import { useLanguage } from './LanguageContext';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
+import { apiFetch } from '../config/api';
 
 export default function CropDiagnosis({ navigation }) {
   const { t } = useLanguage();
@@ -107,18 +106,10 @@ export default function CropDiagnosis({ navigation }) {
     setDiagnosis(null);
 
     try {
-      if (!API_BASE_URL) {
-        throw new Error('EXPO_PUBLIC_API_URL is not configured.');
-      }
-      const response = await fetch(
-        `${API_BASE_URL}/diagnose`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
-
-      const data = await response.json();
+      const data = await apiFetch('/diagnose', {
+        method: 'POST',
+        body: formData,
+      });
 
       console.log('Diagnosis result:', data);
 
@@ -129,7 +120,7 @@ export default function CropDiagnosis({ navigation }) {
       // The result will appear in the result box below.
     } catch (error) {
       console.log('Diagnosis error:', error);
-      alert('Could not connect to the backend.');
+      alert(error.message || 'Could not connect to the backend.');
     } finally {
       setIsDiagnosing(false);
     }

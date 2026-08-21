@@ -8,8 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
+import { apiFetch } from '../config/api';
 
 function weatherLabel(code) {
   if (code === 0) return 'Clear sky';
@@ -47,10 +46,7 @@ export default function WeatherSoil({ navigation, route }) {
     setLoading(true);
     setError('');
     try {
-      if (!API_BASE_URL) throw new Error('EXPO_PUBLIC_API_URL is not configured. Add it to frontend/.env.');
-      const response = await fetch(`${API_BASE_URL}/weather?location=${encodeURIComponent(query.trim())}`);
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.detail || 'Weather service is temporarily unavailable');
+      const result = await apiFetch(`/weather?location=${encodeURIComponent(query.trim())}`);
       setData(result.forecast);
       setPlaceName(result.place_name);
     } catch (requestError) {
