@@ -7,8 +7,10 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { useLanguage } from './LanguageContext';
 
 export default function MandiPrices() {
+  const { t } = useLanguage();
   const [search, setSearch] = useState('');
 
   const mandiData = [
@@ -64,9 +66,9 @@ export default function MandiPrices() {
         
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>💰 Mandi Prices</Text>
+          <Text style={styles.title}>💰 {t('mandiPrices')}</Text>
           <Text style={styles.subtitle}>
-            Check today's crop market prices
+            {t('mandiSubtitle')}
           </Text>
         </View>
 
@@ -76,7 +78,7 @@ export default function MandiPrices() {
 
           <TextInput
             style={styles.input}
-            placeholder="Search crop..."
+            placeholder={t('searchCrop')}
             placeholderTextColor="#888"
             value={search}
             onChangeText={setSearch}
@@ -85,13 +87,13 @@ export default function MandiPrices() {
 
         {/* Location */}
         <View style={styles.locationBox}>
-          <Text style={styles.locationLabel}>📍 Mandi Location</Text>
+          <Text style={styles.locationLabel}>📍 {t('mandiLocation')}</Text>
           <Text style={styles.locationName}>Pune Mandi</Text>
-          <Text style={styles.updated}>Prices updated today</Text>
+          <Text style={styles.updated}>{t('pricesUpdated')}</Text>
         </View>
 
         {/* Section title */}
-        <Text style={styles.sectionTitle}>Today's Prices</Text>
+        <Text style={styles.sectionTitle}>{t('todaysPrices')}</Text>
 
         {/* Price Cards */}
         {filteredData.length > 0 ? (
@@ -120,11 +122,11 @@ export default function MandiPrices() {
 
                 <View style={styles.rangeRow}>
                   <Text style={styles.rangeText}>
-                    Min {item.min}
+                    {t('min')} {item.min}
                   </Text>
 
                   <Text style={styles.rangeText}>
-                    Max {item.max}
+                    {t('max')} {item.max}
                   </Text>
                 </View>
               </View>
@@ -135,7 +137,7 @@ export default function MandiPrices() {
                 </Text>
 
                 <Text style={styles.perQuintal}>
-                  / Quintal
+                  {t('perQuintal')}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -144,7 +146,7 @@ export default function MandiPrices() {
           <View style={styles.noResult}>
             <Text style={styles.noResultIcon}>🔎</Text>
             <Text style={styles.noResultText}>
-              No crop found
+              {t('noCrop')}
             </Text>
             <Text style={styles.noResultSubtext}>
               Try searching another crop
@@ -154,7 +156,7 @@ export default function MandiPrices() {
 
         {/* Note */}
         <View style={styles.noteBox}>
-          <Text style={styles.noteTitle}>ℹ️ Price Information</Text>
+          <Text style={styles.noteTitle}>ℹ️ {t('priceInformation')}</Text>
 
           <Text style={styles.noteText}>
             Prices shown are sample market prices.

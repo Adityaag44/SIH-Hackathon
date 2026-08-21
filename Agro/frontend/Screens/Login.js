@@ -10,8 +10,10 @@ import {
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { useLanguage } from './LanguageContext';
 
 export default function Login({ navigation }) {
+  const { t } = useLanguage();
   const [identity, setIdentity] = useState('');
   const [password, setPassword] = useState('');
 
@@ -36,10 +38,10 @@ export default function Login({ navigation }) {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.title}>Welcome back</Text>
+        <Text style={styles.title}>{t('welcomeBack')}</Text>
         <Text style={styles.subtitle}>Sign in to manage your farm with confidence.</Text>
 
-        <Text style={styles.label}>Email or phone number</Text>
+        <Text style={styles.label}>{t('contact')}</Text>
         <TextInput
           style={styles.input}
           placeholder="Enter email or phone number"
@@ -51,7 +53,7 @@ export default function Login({ navigation }) {
           keyboardType="email-address"
         />
 
-        <Text style={styles.label}>Password</Text>
+        <Text style={styles.label}>{t('password')}</Text>
         <TextInput
           style={styles.input}
           placeholder="Enter your password"
@@ -63,7 +65,7 @@ export default function Login({ navigation }) {
         />
 
         <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
-          <Text style={styles.primaryButtonText}>Log in</Text>
+          <Text style={styles.primaryButtonText}>{t('login')}</Text>
         </TouchableOpacity>
 
         <View style={styles.footer}>

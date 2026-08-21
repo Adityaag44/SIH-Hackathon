@@ -7,10 +7,14 @@ import MandiPrices from './Screens/MandiPrices';
 import FarmerServices from './Screens/FarmerServices';
 import Login from './Screens/Login';
 import Register from './Screens/Register';
+import UserDetails from './Screens/UserDetails';
+import Profile from './Screens/Profile';
+import { LanguageProvider, useLanguage } from './Screens/LanguageContext';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
+    <LanguageProvider>
      <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
@@ -24,42 +28,64 @@ export default function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="UserDetails"
+          component={UserDetails}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="Home"
           component={HomeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={Profile}
           options={{ headerShown: false }}
         />
 
         <Stack.Screen
           name="CropDiagnosis"
           component={CropDiagnosis}
-          options={{ title: 'Crop Diagnosis' }}
+          options={{ headerShown: false }}
         />
           <Stack.Screen
           name="MandiPrices"
           component={MandiPrices}
-          options={{ title: 'Mandi Prices' }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="FarmerServices"
           component={FarmerServices}
-          options={{ title: 'Farmer Services' }}
+          options={{ headerShown: false }}
         />
 
 
       </Stack.Navigator>
     </NavigationContainer>
+    </LanguageProvider>
   );
 }
 
-function HomeScreen({ navigation }) {
+function HomeScreen({ navigation, route }) {
+  const profile = route.params?.profile || {};
+  const { t } = useLanguage();
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
 
-      <Text style={styles.logo}>🌱 AGRO</Text>
-      <Text style={styles.welcome}>Welcome, Farmer</Text>
+      <View style={styles.topRow}>
+        <Text style={styles.logo}>🌱 AGRO</Text>
+        <TouchableOpacity
+          style={styles.profileButton}
+          onPress={() => navigation.navigate('Profile', { profile })}
+          accessibilityLabel="View profile"
+        >
+          <Text style={styles.profileIcon}>👤</Text>
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.welcome}>{t('welcome')}</Text>
       <Text style={styles.subtitle}>
-        Your smart farming assistant
+        {t('smartAssistant')}
       </Text>
 
       <View style={styles.cards}>
@@ -67,9 +93,9 @@ function HomeScreen({ navigation }) {
         <TouchableOpacity style={styles.card} onPress={()=>navigation.navigate('CropDiagnosis')}>
           <Text style={styles.icon}>🌿</Text>
           <View>
-            <Text style={styles.cardTitle}>Crop Diagnosis</Text>
+            <Text style={styles.cardTitle}>{t('cropDiagnosis')}</Text>
             <Text style={styles.cardText}>
-              Detect crop diseases using AI
+              {t('cropDiagnosisDesc')}
             </Text>
           </View>
         </TouchableOpacity>
@@ -77,9 +103,9 @@ function HomeScreen({ navigation }) {
         <TouchableOpacity style={styles.card}>
           <Text style={styles.icon}>🌦️</Text>
           <View>
-            <Text style={styles.cardTitle}>Weather & Soil</Text>
+            <Text style={styles.cardTitle}>{t('weatherSoil')}</Text>
             <Text style={styles.cardText}>
-              Check weather and soil conditions
+              {t('weatherSoilDesc')}
             </Text>
           </View>
         </TouchableOpacity>
@@ -91,10 +117,10 @@ function HomeScreen({ navigation }) {
          <Text style={styles.icon}>💰</Text>
 
         <View>
-           <Text style={styles.cardTitle}>Mandi Prices</Text>
+           <Text style={styles.cardTitle}>{t('mandiPrices')}</Text>
 
           <Text style={styles.cardText}>
-             Find current market prices
+             {t('mandiPricesDesc')}
              </Text>
            </View>
           </TouchableOpacity>
@@ -102,9 +128,9 @@ function HomeScreen({ navigation }) {
         <TouchableOpacity style={styles.card}>
           <Text style={styles.icon}>💧</Text>
           <View>
-            <Text style={styles.cardTitle}>Farm Advisory</Text>
+            <Text style={styles.cardTitle}>{t('farmAdvisory')}</Text>
             <Text style={styles.cardText}>
-              Get irrigation and fertilizer advice
+              {t('farmAdvisoryDesc')}
             </Text>
           </View>
         </TouchableOpacity>
@@ -116,10 +142,10 @@ function HomeScreen({ navigation }) {
           <Text style={styles.icon}>🧑‍🌾</Text>
 
            <View>
-             <Text style={styles.cardTitle}>Farmer Services</Text>
+             <Text style={styles.cardTitle}>{t('farmerServices')}</Text>
 
             <Text style={styles.cardText}>
-             Access important government services
+             {t('farmerServicesDesc')}
              </Text>
            </View>
           </TouchableOpacity>
@@ -139,7 +165,26 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 32,
     fontWeight: 'bold',
+  },
+
+  topRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 15,
+  },
+
+  profileButton: {
+    alignItems: 'center',
+    backgroundColor: '#E0EEDC',
+    borderRadius: 22,
+    height: 44,
+    justifyContent: 'center',
+    width: 44,
+  },
+
+  profileIcon: {
+    fontSize: 22,
   },
 
   welcome: {

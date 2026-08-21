@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   Linking,
 } from 'react-native';
+import { useLanguage } from './LanguageContext';
 
 export default function FarmerServices() {
+  const { t } = useLanguage();
 
   const openWebsite = (url) => {
     Linking.openURL(url);
@@ -18,10 +20,10 @@ export default function FarmerServices() {
     <View style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
 
-        <Text style={styles.title}>🧑‍🌾 Farmer Services</Text>
+        <Text style={styles.title}>🧑‍🌾 {t('farmerServices')}</Text>
 
         <Text style={styles.subtitle}>
-          Important government services for farmers
+          {t('farmerServicesSubtitle')}
         </Text>
 
         {/* Fertilizer e-Token */}

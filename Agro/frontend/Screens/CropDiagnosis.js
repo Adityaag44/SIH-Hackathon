@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import {
   View,
@@ -7,13 +7,32 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
+  Animated,
 } from 'react-native';
 
 import * as ImagePicker from 'expo-image-picker';
+import { useLanguage } from './LanguageContext';
 
 export default function CropDiagnosis({ navigation }) {
+  const { t } = useLanguage();
   const [image, setImage] = useState(null);
   const [diagnosis, setDiagnosis] = useState(null);
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
+  const progress = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!isDiagnosing) {
+      progress.stopAnimation();
+      progress.setValue(0);
+      return undefined;
+    }
+
+    const animation = Animated.loop(
+      Animated.timing(progress, { toValue: 1, duration: 1100, useNativeDriver: true })
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [isDiagnosing, progress]);
 
   // =========================
   // PICK IMAGE FROM GALLERY
@@ -69,7 +88,7 @@ export default function CropDiagnosis({ navigation }) {
   // DIAGNOSE CROP
   // =========================
   const diagnoseCrop = async () => {
-    if (!image) {
+    if (!image || isDiagnosing) {
       alert('Please select or take a crop image first.');
       return;
     }
@@ -81,6 +100,9 @@ export default function CropDiagnosis({ navigation }) {
       name: 'crop.jpg',
       type: 'image/jpeg',
     });
+
+    setIsDiagnosing(true);
+    setDiagnosis(null);
 
     try {
       const response = await fetch(
@@ -103,6 +125,8 @@ export default function CropDiagnosis({ navigation }) {
     } catch (error) {
       console.log('Diagnosis error:', error);
       alert('Could not connect to the backend.');
+    } finally {
+      setIsDiagnosing(false);
     }
   };
 
@@ -121,11 +145,11 @@ export default function CropDiagnosis({ navigation }) {
         {/* TITLE */}
 
         <Text style={styles.title}>
-          Crop Diagnosis 🌱
+          {t('cropDiagnosis')} 🌱
         </Text>
 
         <Text style={styles.subtitle}>
-          Upload a photo of your crop to detect possible diseases using AI.
+          {t('cropUpload')}
         </Text>
 
         {/* MAIN CARD */}
@@ -133,13 +157,11 @@ export default function CropDiagnosis({ navigation }) {
         <View style={styles.card}>
 
           <Text style={styles.cardTitle}>
-            Crop Disease Detection
+            {t('cropDetection')}
           </Text>
 
           <Text style={styles.cardText}>
-            Take a clear photo of the affected part of your crop.
-            Our AI will analyze the image and provide possible
-            disease information.
+            {t('cropPhotoHelp')}
           </Text>
 
           {/* TAKE PHOTO */}
@@ -149,7 +171,7 @@ export default function CropDiagnosis({ navigation }) {
             onPress={takePhoto}
           >
             <Text style={styles.buttonText}>
-              📷 Take a Photo
+              📷 {t('takePhoto')}
             </Text>
           </TouchableOpacity>
 
@@ -160,7 +182,7 @@ export default function CropDiagnosis({ navigation }) {
             onPress={pickImage}
           >
             <Text style={styles.secondaryButtonText}>
-              🖼️ Choose from Gallery
+              🖼️ {t('chooseGallery')}
             </Text>
           </TouchableOpacity>
 
@@ -178,13 +200,32 @@ export default function CropDiagnosis({ navigation }) {
 
           {image && (
             <TouchableOpacity
-              style={styles.diagnoseButton}
+              style={[styles.diagnoseButton, isDiagnosing && styles.diagnoseButtonDisabled]}
               onPress={diagnoseCrop}
+              disabled={isDiagnosing}
             >
               <Text style={styles.diagnoseButtonText}>
-                🔍 Diagnose Crop
+                {isDiagnosing ? '⏳ Analyzing crop image...' : `🔍 ${t('diagnoseCrop')}`}
               </Text>
             </TouchableOpacity>
+          )}
+
+          {isDiagnosing && (
+            <View style={styles.progressSection} accessibilityLabel="Crop diagnosis is in progress">
+              <View style={styles.progressTrack}>
+                <Animated.View
+                  style={[
+                    styles.progressBar,
+                    {
+                      transform: [{
+                        translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [-160, 160] }),
+                      }],
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={styles.progressText}>Please wait while AI analyzes your crop.</Text>
+            </View>
           )}
 
           {/* =========================
@@ -307,7 +348,7 @@ export default function CropDiagnosis({ navigation }) {
           onPress={() => navigation.goBack()}
         >
           <Text style={styles.backButtonText}>
-            ← Back
+            ← {t('back')}
           </Text>
         </TouchableOpacity>
 
@@ -417,6 +458,38 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+
+  diagnoseButtonDisabled: {
+    backgroundColor: '#6E9871',
+  },
+
+  progressSection: {
+    backgroundColor: '#EFF7ED',
+    borderRadius: 12,
+    marginTop: 16,
+    padding: 14,
+  },
+
+  progressTrack: {
+    backgroundColor: '#D7E9D4',
+    borderRadius: 99,
+    height: 7,
+    overflow: 'hidden',
+  },
+
+  progressBar: {
+    backgroundColor: '#2E7D32',
+    borderRadius: 99,
+    height: '100%',
+    width: '55%',
+  },
+
+  progressText: {
+    color: '#467149',
+    fontSize: 13,
+    marginTop: 10,
+    textAlign: 'center',
   },
 
   // =========================
